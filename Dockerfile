@@ -1,18 +1,17 @@
-FROM ubuntu:22.04
+FROM debian:12-slim
 
 WORKDIR /app/
 
-RUN apt update && apt install -y curl gpg lsb-release wget
-
-RUN curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/cloudflare-client.list
-RUN apt update && apt install -y cloudflare-warp
-
-RUN wget -O gost.gz "https://github.com/ginuerzh/gost/releases/download/v2.11.5/gost-linux-amd64-2.11.5.gz" && gzip -d /app/gost.gz && chmod +x /app/gost
-
 COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
 
-EXPOSE 1080
+RUN apt-get update && apt-get install -y curl gnupg wget lsb-release dbus && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/cloudflare-client.list && \
+    apt-get update && apt-get install -y cloudflare-warp && \
+    wget -O gost.tar.gz "https://github.com/go-gost/gost/releases/download/v3.0.0-rc10/gost_3.0.0-rc10_linux_amd64v3.tar.gz" && tar -C /app/ -xzf /app/*.tar.gz && \
+    chmod +x /app/gost && chmod +x /app/start.sh
 
-CMD [ "/bin/bash", "/app/start.sh" ]
+EXPOSE 10000
+
+CMD [ "/bin/sh", "/app/start.sh" ]
