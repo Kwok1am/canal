@@ -1,6 +1,6 @@
 #!/bin/bash
 
-nohup /usr/bin/warp-svc > /app/warp.log &
+nohup /usr/bin/warp-svc > /dev/null 2>&1 &
 
 sleep 5
 
